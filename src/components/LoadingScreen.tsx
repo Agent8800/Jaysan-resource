@@ -34,14 +34,14 @@ export default function LoadingScreen() {
           className="object-contain"
         />
       </div>
-      
+
       <div className="w-64 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div 
-          className="h-full bg-[#002E6E] transition-all duration-300 ease-out"
+        <div
+          className="h-full bg-[#3D5300] transition-all duration-300 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
-      
+
       <p className="mt-4 text-xs font-semibold text-gray-400 tracking-[0.2em] uppercase">
         Loading Excellence
       </p>

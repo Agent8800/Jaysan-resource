@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Jaysan Resource | Home Services at Your Doorstep",
-  description: "Premier home services and resource management. Inspired by Urban Company.",
+  title: "Jaysan Resource | Premier Printer Services & Products",
+  description: "Certified enterprise printer repair, industrial maintenance, and high-quality printer supplies.",
 };
 
 export default function RootLayout({

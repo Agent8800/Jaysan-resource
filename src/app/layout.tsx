@@ -1,27 +1,25 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import LoadingScreen from "@/components/LoadingScreen";
 
 const inter = Inter({
-  subsets: ["latin"],
   variable: "--font-inter",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Jaysan Resource | Premier Printer Services & Products",
-  description: "Certified enterprise printer repair, industrial maintenance, and high-quality printer supplies.",
+  title: "Jaysan Resource | Printer Services",
+  description: "Quality printer shop and repairs.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased bg-white`}>
-        <LoadingScreen />
+      <body className={`${inter.variable} antialiased bg-white`}>
         {children}
       </body>
     </html>

@@ -1,58 +1,79 @@
 "use client";
 
-import { Search, Printer } from "lucide-react";
+import { Search, Printer, ShoppingBag, Wrench } from "lucide-react";
+import Link from "next/link";
 
 export default function HeroSection() {
     return (
-        <div className="relative w-full bg-[#064E3B] overflow-hidden">
-            {/* Professional Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#064E3B] via-[#053F30] to-[#022C22] z-10" />
+        <div className="relative w-full bg-white overflow-hidden border-b border-gray-50">
+            {/* Decorative Background Elements */}
+            <div className="absolute top-0 right-0 w-1/3 h-full bg-[#22c55e]/5 blur-[100px] rounded-full -mr-20 -mt-20 z-0" />
+            <div className="absolute bottom-0 left-0 w-1/3 h-full bg-[#4f46e5]/5 blur-[100px] rounded-full -ml-20 -mb-20 z-0" />
 
-            {/* Abstract Design Elements */}
-            <div className="absolute top-0 right-0 w-2/3 h-full hidden lg:flex items-center justify-center z-10 opacity-10 pointer-events-none">
-                <Printer size={600} className="text-white shrink-0 rotate-12" />
-            </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24 lg:py-32 relative z-10">
+                <div className="flex flex-col lg:flex-row items-center gap-16">
+                    <div className="flex-1 text-center lg:text-left">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 text-[#22c55e] border border-green-100 text-sm font-bold mb-8">
+                            <span className="flex h-2 w-2 rounded-full bg-[#22c55e] animate-pulse"></span>
+                            Your Trusted Printer Partner
+                        </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-40 relative z-20">
-                <div className="max-w-2xl">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-xs font-bold uppercase tracking-widest mb-8">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        Certified Professional Services
-                    </div>
+                        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-[#0f172a] leading-[1.1] tracking-tight mb-8">
+                            Quality Printers <br />
+                            <span className="text-[#4f46e5]">Experts.</span>
+                        </h1>
 
-                    <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white leading-[1.1] tracking-tight">
-                        Enterprise Printer<br />
-                        <span className="text-emerald-400 italic">Maintenance.</span>
-                    </h1>
-                    <p className="mt-8 text-lg sm:text-xl text-emerald-50/80 max-w-lg leading-relaxed">
-                        High-precision repair, maintenance, and supplies for industrial-grade printers and corporate print fleets.
-                    </p>
+                        <p className="text-lg sm:text-xl text-gray-500 max-w-xl mx-auto lg:mx-0 leading-relaxed mb-10">
+                            Your one-stop shop for professional printer repairs, genuine ink & toner supplies, and branded printer hardware.
+                        </p>
 
-                    <div className="mt-12 max-w-xl">
-                        <div className="bg-white p-2 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2">
-                            <div className="flex-1 relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                                    <Search size={22} />
-                                </div>
-                                <input
-                                    type="text"
-                                    className="block w-full pl-12 pr-4 py-5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 sm:text-base border-none rounded-xl"
-                                    placeholder="Need Enterprise printer support?"
-                                />
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-12">
+                            <Link
+                                href="/complaint"
+                                className="w-full sm:w-auto px-8 py-4 bg-[#22c55e] text-white rounded-2xl font-bold shadow-xl shadow-green-200 hover:bg-[#16a34a] transition-all flex items-center justify-center gap-2 group"
+                            >
+                                <Wrench size={20} className="group-hover:rotate-12 transition-transform" />
+                                Book a Repair
+                            </Link>
+                            <Link
+                                href="/shop"
+                                className="w-full sm:w-auto px-8 py-4 bg-[#4f46e5] text-white rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-[#4338ca] transition-all flex items-center justify-center gap-2"
+                            >
+                                <ShoppingBag size={20} />
+                                Shop Supplies
+                            </Link>
+                        </div>
+
+                        <div className="flex flex-wrap justify-center lg:justify-start gap-8 opacity-60">
+                            <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all cursor-default">
+                                <Printer size={20} /> <span className="text-sm font-bold">HP Certified</span>
                             </div>
-                            <button className="bg-[#064E3B] text-white px-10 py-5 rounded-xl font-bold hover:bg-[#053F30] transition-all shadow-lg active:scale-95">
-                                Search
-                            </button>
+                            <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all cursor-default">
+                                <Printer size={20} /> <span className="text-sm font-bold">Canon Expert</span>
+                            </div>
+                            <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all cursor-default">
+                                <Printer size={20} /> <span className="text-sm font-bold">Epson Pro</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="mt-10 flex flex-wrap gap-4 text-emerald-100/60 text-sm">
-                        <span className="px-4 py-2 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10 hover:border-emerald-400/30 transition-colors">Industrial Laser</span>
-                        <span className="px-4 py-2 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10 hover:border-emerald-400/30 transition-colors">Toner Optimization</span>
-                        <span className="px-4 py-2 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10 hover:border-emerald-400/30 transition-colors">Fleet Management</span>
+                    <div className="flex-1 relative w-full max-w-xl lg:max-w-none">
+                        <div className="relative aspect-square sm:aspect-[4/3] rounded-[3rem] bg-gray-50 border border-gray-100 overflow-hidden shadow-2xl">
+                            <div className="absolute inset-0 flex items-center justify-center p-12">
+                                <div className="relative w-full h-full opacity-10">
+                                    <Printer size={400} className="w-full h-full text-[#4f46e5]" />
+                                </div>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="text-center p-8 bg-white/80 backdrop-blur-md rounded-3xl border border-white/40 shadow-xl max-w-xs">
+                                        <div className="text-4xl font-black text-[#22c55e] mb-2">15+</div>
+                                        <div className="text-sm font-bold text-gray-500 uppercase tracking-widest">Years of Printer Excellence</div>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Accent lines */}
+                            <div className="absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-[#f59e0b]/10 to-transparent" />
+                            <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#22c55e]/10 to-transparent" />
+                        </div>
                     </div>
                 </div>
             </div>

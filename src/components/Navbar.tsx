@@ -3,10 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Search, MapPin, Menu, User } from "lucide-react";
+import { Search, MapPin, Menu, User, ShoppingBag } from "lucide-react";
 
 export default function Navbar() {
-    const [location, setLocation] = useState("Select Location");
+    const [location, setLocation] = useState("Detecting Location...");
 
     useEffect(() => {
         if ("geolocation" in navigator) {
@@ -20,8 +20,13 @@ export default function Navbar() {
                     setLocation(city);
                 } catch (error) {
                     console.error("Error fetching location:", error);
+                    setLocation("Store Location");
                 }
+            }, () => {
+                setLocation("Store Location");
             });
+        } else {
+            setLocation("Store Location");
         }
     }, []);
 
@@ -44,34 +49,39 @@ export default function Navbar() {
                     {/* Search Bar - Hidden on mobile */}
                     <div className="hidden md:flex flex-1 max-w-lg mx-8">
                         <div className="relative w-full group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#064E3B]">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#22c55e]">
                                 <Search size={18} />
                             </div>
                             <input
                                 type="text"
-                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-50 focus:border-[#064E3B] sm:text-sm transition-all shadow-sm"
-                                placeholder="Search for 'Printer Repair', 'Toner'..."
+                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-[#22c55e] sm:text-sm transition-all shadow-sm"
+                                placeholder="Search for printers, ink, repair..."
                             />
                         </div>
                     </div>
 
                     {/* Right Actions */}
-                    <div className="flex items-center gap-4">
-                        <div className="hidden lg:flex items-center gap-1 text-gray-600 hover:text-[#064E3B] cursor-pointer transition-colors">
-                            <MapPin size={18} className="text-[#064E3B]" />
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <div className="hidden lg:flex items-center gap-1 text-gray-600 hover:text-[#22c55e] cursor-pointer transition-colors px-3 py-1 bg-gray-50 rounded-lg">
+                            <MapPin size={16} className="text-[#22c55e]" />
                             <span className="text-sm font-semibold whitespace-nowrap">{location}</span>
                         </div>
 
                         <Link
                             href="/complaint"
-                            className="hidden sm:inline-flex items-center px-4 py-2 border border-transparent text-sm font-bold rounded-xl text-white bg-[#064E3B] hover:bg-[#053F30] shadow-md transition-all active:scale-95"
+                            className="hidden sm:inline-flex items-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-[#22c55e] hover:bg-[#16a34a] shadow-md transition-all active:scale-95"
                         >
-                            Register Request
+                            Book Repair
                         </Link>
 
-                        <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-emerald-50 text-[#064E3B] cursor-pointer hover:bg-emerald-100 transition-colors">
-                            <User size={20} />
-                        </div>
+                        <Link href="/shop" className="p-2 text-gray-600 hover:text-[#4f46e5] relative">
+                            <ShoppingBag size={22} />
+                            <span className="absolute top-1 right-1 w-2 h-2 bg-[#f59e0b] rounded-full animate-pulse"></span>
+                        </Link>
+
+                        <Link href="/admin" className="p-2 text-gray-600 hover:text-[#0f172a]">
+                            <User size={22} />
+                        </Link>
 
                         <button className="md:hidden p-2 rounded-xl text-gray-600 hover:bg-gray-100">
                             <Menu size={24} />

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -8,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Jaysan Resource | Printer Services",
-  description: "Quality printer shop and repairs.",
+  title: "Jaysan Resource | Quality Printer Shop & Service",
+  description: "Your one-stop shop for printer repairs, ink, and supplies.",
 };
 
 export default function RootLayout({
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased bg-white`}>
+        <LoadingScreen />
         {children}
       </body>
     </html>

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
     LayoutDashboard,
     Package,
@@ -19,6 +20,21 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const checkAuth = () => {
+            const token = localStorage.getItem("jrpl_admin_token");
+            if (!token && pathname !== "/admin/login") {
+                router.push("/admin/login");
+                setIsAuthenticated(false);
+            } else {
+                setIsAuthenticated(true);
+            }
+        };
+        checkAuth();
+    }, [pathname, router]);
 
     const menuItems = [
         { name: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -26,73 +42,80 @@ export default function AdminLayout({
         { name: "Requests", icon: ClipboardList, href: "/admin/requests" },
     ];
 
+    const handleLogout = () => {
+        localStorage.removeItem("jrpl_admin_token");
+        router.push("/admin/login");
+    };
+
+    if (isAuthenticated === null) return null; // Prevent flicker
+
+    if (pathname === "/admin/login") return <>{children}</>;
+
     return (
-        <div className="flex min-h-screen bg-gray-50">
+        <div className="flex min-h-screen bg-[#f8fafc]">
             {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
-                <div className="p-8 pb-4">
+            <aside className="w-72 bg-[#0f172a] hidden md:flex flex-col text-white shadow-2xl z-50">
+                <div className="p-10">
                     <Link href="/">
-                        <Image src="/logo.png" alt="JRPL Admin" width={120} height={40} className="object-contain" />
+                        <div className="relative w-40 h-10 grayscale invert brightness-200">
+                            <Image src="/logo.png" alt="JRPL Admin" fill className="object-contain" />
+                        </div>
                     </Link>
-                    <div className="mt-8 text-[10px] font-black uppercase tracking-widest text-gray-400">Main Menu</div>
+                    <div className="mt-12 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6">Operations</div>
+
+                    <nav className="space-y-3">
+                        {menuItems.map((item) => {
+                            const isActive = pathname === item.href;
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className={`flex items-center gap-4 px-6 py-4 rounded-2xl transition-all font-bold text-sm group ${isActive
+                                        ? "bg-[#22c55e] text-white shadow-xl shadow-green-900/20"
+                                        : "text-slate-400 hover:bg-white/5 hover:text-white"
+                                        }`}
+                                >
+                                    <item.icon size={20} className={`${isActive ? "text-white" : "text-slate-500 group-hover:text-white"}`} />
+                                    {item.name}
+                                </Link>
+                            );
+                        })}
+                    </nav>
                 </div>
 
-                <nav className="flex-1 px-4 space-y-2 mt-4">
-                    {menuItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${isActive
-                                        ? "bg-[#22c55e] text-white shadow-lg shadow-green-100"
-                                        : "text-gray-500 hover:bg-gray-50 hover:text-[#0f172a]"
-                                    }`}
-                            >
-                                <item.icon size={20} />
-                                {item.name}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                <div className="p-4 border-t border-gray-100">
-                    <button className="flex items-center gap-3 px-4 py-3 w-full text-gray-500 hover:text-red-600 font-bold transition-colors">
-                        <LogOut size={20} />
-                        Logout
+                <div className="mt-auto p-8 border-t border-white/5">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-4 px-6 py-5 w-full text-slate-500 hover:text-red-400 font-bold transition-all rounded-2xl hover:bg-red-500/5 group"
+                    >
+                        <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+                        System Logout
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col">
-                {/* Mobile Header */}
-                <header className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-                    <Link href="/">
-                        <Image src="/logo.png" alt="JRPL Admin" width={100} height={30} className="object-contain" />
-                    </Link>
-                    <button className="p-2 text-gray-500">
-                        <MenuIcon />
-                    </button>
-                </header>
-
-                {/* Top Bar */}
-                <header className="hidden md:flex bg-white h-20 items-center justify-between px-8 border-b border-gray-100">
-                    <div className="text-gray-900 font-black text-xl">
-                        {menuItems.find(i => i.href === pathname)?.name || "Admin Panel"}
+            <main className="flex-1 flex flex-col min-w-0">
+                <header className="h-24 bg-white border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-40">
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                            {menuItems.find(i => i.href === pathname)?.name || "Control Center"}
+                        </h1>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Jaysan Resource • Admin Node 01</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="text-right">
-                            <div className="text-sm font-black text-gray-900">Admin User</div>
-                            <div className="text-xs text-gray-400">Store Manager</div>
+
+                    <div className="flex items-center gap-6">
+                        <div className="hidden sm:block text-right">
+                            <div className="text-sm font-black text-slate-900 leading-none">Management Console</div>
+                            <div className="text-[10px] text-green-500 font-black uppercase tracking-widest mt-1">Status: Operational</div>
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-[#4f46e5] text-white flex items-center justify-center font-bold">
+                        <div className="w-12 h-12 rounded-2xl bg-[#0f172a] text-white flex items-center justify-center font-black text-lg border-2 border-slate-50 shadow-sm">
                             A
                         </div>
                     </div>
                 </header>
 
-                <div className="p-4 sm:p-8 overflow-y-auto">
+                <div className="p-10 max-w-[1600px] mx-auto w-full">
                     {children}
                 </div>
             </main>

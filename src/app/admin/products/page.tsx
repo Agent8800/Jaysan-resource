@@ -8,135 +8,216 @@ import {
     Droplets,
     HardDrive,
     MoreVertical,
-    ExternalLink,
     Trash2,
     Edit3,
     X,
-    Upload
+    Upload,
+    Check,
+    Lock,
+    Settings
 } from "lucide-react";
-import { useState } from "react";
-import Image from "next/image";
 
-const initialProducts = [
-    { id: 1, name: "HP Laser Jet M15w", category: "Printers", price: "₹12,499", stock: 12, icon: Printer, iconColor: "text-[#4f46e5]", bg: "bg-indigo-50" },
-    { id: 2, name: "Genuine 12A Toner", category: "Supplies", price: "₹3,299", stock: 45, icon: Droplets, iconColor: "text-[#22c55e]", bg: "bg-green-50" },
-    { id: 3, name: "Maintenance Kit Pro", category: "Service", price: "₹1,899", stock: 8, icon: HardDrive, iconColor: "text-[#f59e0b]", bg: "bg-amber-50" },
-];
+const iconMap: { [key: string]: any } = {
+    Printer,
+    Droplets,
+    Settings,
+    HardDrive
+};
+import { useState, useEffect } from "react";
 
 export default function ProductManager() {
-    const [products, setProducts] = useState(initialProducts);
+    const [products, setProducts] = useState<any[]>([]);
     const [isAdding, setIsAdding] = useState(false);
 
+    // New Product State
+    const [newTitle, setNewTitle] = useState("");
+    const [newCategory, setNewCategory] = useState("Printers");
+    const [newPrice, setNewPrice] = useState("");
+    const [newOfferPrice, setNewOfferPrice] = useState("");
+    const [newDescription, setNewDescription] = useState("");
+    const [newStock, setNewStock] = useState("");
+    const [newImageUrl, setNewImageUrl] = useState("");
+
+    useEffect(() => {
+        const load = () => {
+            const stored = localStorage.getItem("jrpl_products");
+            if (stored) setProducts(JSON.parse(stored));
+        };
+        load();
+    }, []);
+
+    const handleSave = () => {
+        const updated = [
+            {
+                id: Date.now(),
+                name: newTitle,
+                category: newCategory,
+                price: `₹${newPrice}`,
+                offerPrice: newOfferPrice ? `₹${newOfferPrice}` : null,
+                stock: newStock,
+                description: newDescription,
+                image: newImageUrl || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&q=80&w=800",
+                tag: "In Stock"
+            },
+            ...products
+        ];
+        setProducts(updated);
+        localStorage.setItem("jrpl_products", JSON.stringify(updated));
+        window.dispatchEvent(new Event("storage"));
+        setIsAdding(false);
+        // Reset fields
+        setNewTitle(""); setNewPrice(""); setNewOfferPrice(""); setNewDescription(""); setNewImageUrl("");
+    };
+
+    const handleDelete = (id: number) => {
+        const updated = products.filter(p => p.id !== id);
+        setProducts(updated);
+        localStorage.setItem("jrpl_products", JSON.stringify(updated));
+        window.dispatchEvent(new Event("storage"));
+    };
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pb-20">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div className="space-y-10 animate-in fade-in duration-700 pb-20">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-6 bg-white p-6 rounded-[2rem] border border-slate-50 shadow-sm">
                 <div className="relative w-full sm:w-96">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input
                         type="text"
-                        placeholder="Search store inventory..."
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold text-sm"
+                        placeholder="Filter inventory by name..."
+                        className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-transparent rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold text-sm"
                     />
                 </div>
                 <button
                     onClick={() => setIsAdding(true)}
-                    className="w-full sm:w-auto bg-[#22c55e] text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#16a34a] shadow-lg shadow-green-100 active:scale-95 transition-all"
+                    className="w-full sm:w-auto bg-[#0f172a] text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-black shadow-xl shadow-slate-200 transition-all active:scale-95"
                 >
-                    <Plus size={20} /> Add New Product
+                    <Plus size={20} /> Create Shopify-style Product
                 </button>
             </div>
 
-            {/* Product Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {products.length === 0 && (
+                    <div className="col-span-full py-20 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-xs h-96 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 rounded-[3rem] bg-white">
+                        <Package size={48} className="mb-6 opacity-20" />
+                        No inventory items found
+                    </div>
+                )}
                 {products.map(item => (
-                    <div key={item.id} className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-4 hover:shadow-xl transition-all group overflow-hidden">
-                        <div className={`relative aspect-video rounded-2xl ${item.bg} flex items-center justify-center mb-6`}>
-                            <item.icon size={60} className={`${item.iconColor} opacity-20 group-hover:scale-110 transition-transform`} />
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="bg-white/80 backdrop-blur-md p-2 rounded-lg text-gray-500 hover:text-[#0f172a]">
-                                    <MoreVertical size={16} />
-                                </button>
+                    <div key={item.id} className="bg-white rounded-[2.5rem] border border-slate-50 shadow-sm p-6 hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 group relative flex flex-col">
+                        <div className="aspect-square rounded-[2rem] bg-slate-50 flex items-center justify-center mb-6 overflow-hidden relative shadow-inner">
+                            <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                            />
+                            {item.offerPrice && (
+                                <div className="absolute top-4 right-4 bg-red-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">SALE</div>
+                            )}
+                        </div>
+
+                        <div className="px-2 flex-grow">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] font-black text-[#22c55e] uppercase tracking-widest">{item.category}</span>
+                                <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Id: {item.id.toString().slice(-4)}</span>
+                            </div>
+                            <h4 className="font-bold text-slate-900 text-lg leading-tight mb-4 group-hover:text-[#22c55e] transition-colors">{item.name}</h4>
+
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className={`font-black text-2xl ${item.offerPrice ? 'text-red-500' : 'text-slate-900'}`}>{item.offerPrice || item.price}</div>
+                                {item.offerPrice && (
+                                    <div className="text-sm font-bold text-slate-300 line-through mt-1">{item.price}</div>
+                                )}
                             </div>
                         </div>
 
-                        <div className="px-2">
-                            <div className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{item.category}</div>
-                            <h4 className="font-bold text-[#0f172a] h-10 overflow-hidden leading-tight mb-4">{item.name}</h4>
-
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                <div>
-                                    <div className="font-black text-lg text-[#0f172a]">{item.price}</div>
-                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{item.stock} in Stock</div>
-                                </div>
-                                <div className="flex gap-1">
-                                    <button className="p-2 text-gray-300 hover:text-[#4f46e5] transition-colors"><Edit3 size={18} /></button>
-                                    <button className="p-2 text-gray-300 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
-                                </div>
+                        <div className="flex items-center justify-between pt-6 border-t border-slate-50 mt-auto">
+                            <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Stock: <span className="text-slate-900">{item.stock}</span></div>
+                            <div className="flex gap-2">
+                                <button className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all"><Edit3 size={18} /></button>
+                                <button
+                                    onClick={() => handleDelete(item.id)}
+                                    className="p-3 bg-red-50 text-red-300 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Add Product Drawer / Modal */}
             {isAdding && (
-                <div className="fixed inset-0 z-[60] flex justify-end bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="w-full max-w-xl bg-white h-full animate-in slide-in-from-right duration-500 shadow-2xl flex flex-col">
-                        <div className="p-8 pb-4 flex items-center justify-between border-b border-gray-100">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-green-50 text-[#22c55e] rounded-xl flex items-center justify-center"><Plus size={24} /></div>
-                                <h2 className="text-xl font-black text-[#0f172a]">New Product Entry</h2>
+                <div className="fixed inset-0 z-[60] flex justify-end bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
+                    <div className="w-full max-w-2xl bg-white h-full animate-in slide-in-from-right duration-500 shadow-2xl flex flex-col p-10">
+                        <div className="flex items-center justify-between mb-12">
+                            <div>
+                                <h2 className="text-3xl font-black text-slate-900 tracking-tight">Add Store Product</h2>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">Publishing to Lucknow Node</p>
                             </div>
-                            <button onClick={() => setIsAdding(false)} className="p-2 bg-gray-50 rounded-full text-gray-400 hover:text-gray-900 transition-all">
+                            <button onClick={() => setIsAdding(false)} className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">
                                 <X size={24} />
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-8 space-y-8">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Product Title</label>
-                                <input type="text" className="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold" placeholder="e.g. Laser Jet Pro X" />
+                        <div className="flex-1 overflow-y-auto pr-4 space-y-10 custom-scrollbar">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Product Information</label>
+                                <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} type="text" className="w-full bg-slate-50 border border-transparent rounded-[1.5rem] px-8 py-6 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold text-lg" placeholder="e.g. HP LaserJet Enterprise M608dn" />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</label>
-                                    <select className="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold appearance-none cursor-pointer">
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Market Price</label>
+                                    <div className="relative">
+                                        <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-300">₹</span>
+                                        <input value={newPrice} onChange={(e) => setNewPrice(e.target.value)} type="text" className="w-full bg-slate-50 border border-transparent rounded-[1.5rem] pl-12 pr-8 py-6 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold" placeholder="54,999" />
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em] ml-2">Offer Price (Optional)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-red-200">₹</span>
+                                        <input value={newOfferPrice} onChange={(e) => setNewOfferPrice(e.target.value)} type="text" className="w-full bg-slate-50 border border-transparent rounded-[1.5rem] pl-12 pr-8 py-6 outline-none focus:bg-white focus:ring-4 focus:ring-red-50 focus:border-red-400 transition-all font-bold text-red-500" placeholder="49,999" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Store Category</label>
+                                    <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-slate-50 border border-transparent rounded-[1.5rem] px-8 py-6 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold appearance-none cursor-pointer">
                                         <option>Printers</option>
-                                        <option>Supplies</option>
-                                        <option>Service</option>
+                                        <option>Inks & Toners</option>
+                                        <option>Maintenance Kit</option>
+                                        <option>Spare Parts</option>
                                     </select>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Price (INR)</label>
-                                    <input type="text" className="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold" placeholder="₹ 3,000" />
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Inventory Stock</label>
+                                    <input value={newStock} onChange={(e) => setNewStock(e.target.value)} type="number" className="w-full bg-slate-50 border border-transparent rounded-[1.5rem] px-8 py-6 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold" placeholder="25" />
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Product Description</label>
-                                <textarea rows={4} className="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold resize-none" placeholder="Features and specifications..."></textarea>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Initial Inventory</label>
-                                <input type="number" className="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold" placeholder="0" />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Media Assets</label>
-                                <div className="border-2 border-dashed border-gray-100 rounded-[2rem] p-10 text-center hover:border-indigo-200 transition-all bg-gray-50/50 cursor-pointer group">
-                                    <Upload className="mx-auto h-10 w-10 text-gray-300 group-hover:text-[#4f46e5] transition-colors mb-4" />
-                                    <div className="text-sm font-bold text-gray-400">Drag product images here</div>
-                                    <div className="text-[10px] text-gray-300 mt-1 uppercase font-black tracking-widest">JPG or PNG up to 5MB</div>
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Product Image Asset URL</label>
+                                <div className="relative">
+                                    <Upload className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+                                    <input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} type="text" className="w-full bg-slate-50 border border-transparent rounded-[1.5rem] pl-14 pr-8 py-6 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold" placeholder="Paste Unsplash or asset URL..." />
                                 </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Technical Summary</label>
+                                <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} rows={4} className="w-full bg-slate-50 border border-transparent rounded-[1.5rem] px-8 py-6 outline-none focus:bg-white focus:ring-4 focus:ring-green-50 focus:border-[#22c55e] transition-all font-bold resize-none leading-relaxed" placeholder="Highlight key specifications and enterprise benefits..."></textarea>
                             </div>
                         </div>
 
-                        <div className="p-8 border-t border-gray-100 flex gap-4 bg-gray-50/30">
-                            <button className="flex-1 bg-[#0f172a] text-white py-4 rounded-xl font-bold hover:bg-black transition-all shadow-xl active:scale-95">Save Product</button>
-                            <button onClick={() => setIsAdding(false)} className="px-6 bg-white border border-gray-100 text-gray-400 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                        <div className="pt-10 flex gap-6 bg-white border-t border-slate-50">
+                            <button onClick={handleSave} className="flex-1 bg-[#22c55e] text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] hover:bg-green-600 transition-all shadow-2xl shadow-green-900/20 active:scale-[0.98] flex items-center justify-center gap-3">
+                                <Check size={20} /> Authorize & Publish
+                            </button>
+                            <button onClick={() => setIsAdding(false)} className="px-12 bg-slate-50 border border-slate-100 text-slate-400 py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-100 transition-all">Discard</button>
                         </div>
                     </div>
                 </div>

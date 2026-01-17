@@ -1,97 +1,123 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ShoppingCart, ArrowRight, Printer, Droplets, HardDrive, X, Check, Settings } from "lucide-react";
+import { ShoppingCart, ArrowRight, Printer, Droplets, HardDrive, X, Check, Settings, Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-const products = [
-    {
-        id: 1,
-        name: "HP Laser Jet M15w",
-        category: "Printers",
-        price: "₹12,499",
-        icon: Printer,
-        tag: "Best Seller",
-        bgColor: "bg-indigo-50",
-        iconColor: "text-[#4f46e5]",
-        description: "Compact laser printer for home and small offices. High-speed black and white printing with wireless connectivity."
-    },
-    {
-        id: 2,
-        name: "Genuine 12A Toner",
-        category: "Supplies",
-        price: "₹3,299",
-        icon: Droplets,
-        tag: "Original",
-        bgColor: "bg-green-50",
-        iconColor: "text-[#22c55e]",
-        description: "Original HP 12A Black Toner Cartridge. Yields up to 2,000 pages. Ensure sharp text and reliable performance."
-    },
-    {
-        id: 3,
-        name: "Maintenance Kit Pro",
-        category: "Service",
-        price: "₹1,899",
-        icon: Settings,
-        tag: "Essential",
-        bgColor: "bg-amber-50",
-        iconColor: "text-[#f59e0b]",
-        description: "Complete maintenance kit for major printer models. Includes fuser rollers, separation pads, and pickup rollers."
-    },
-    {
-        id: 4,
-        name: "Epson L3210 EcoTank",
-        category: "Printers",
-        price: "₹14,299",
-        icon: Printer,
-        tag: "High Savings",
-        bgColor: "bg-green-50",
-        iconColor: "text-[#22c55e]",
-        description: "High-performance ink tank printer with low printing cost. Ideal for home and office use."
-    }
+const iconMap: { [key: string]: any } = {
+    Printer,
+    Droplets,
+    Settings,
+    HardDrive
+};
+
+const defaultProducts = [
+    { id: 1, name: "HP Laser Jet M15w", category: "Printers", price: "₹12,499", iconName: "Printer", tag: "Best Seller", bgColor: "bg-indigo-50", iconColor: "text-[#4f46e5]", description: "Compact laser printer for home and small offices. High-speed black and white printing." },
+    { id: 2, name: "Genuine 12A Toner", category: "Supplies", price: "₹3,299", iconName: "Droplets", tag: "Original", bgColor: "bg-green-50", iconColor: "text-[#22c55e]", description: "Original HP 12A Black Toner Cartridge. Yields up to 2,000 pages." },
+    { id: 3, name: "Maintenance Kit Pro", category: "Service", price: "₹1,899", iconName: "Settings", tag: "Essential", bgColor: "bg-amber-50", iconColor: "text-[#f59e0b]", description: "Complete maintenance kit for major printer models." },
+    { id: 4, name: "Epson L3210 EcoTank", category: "Printers", price: "₹14,299", iconName: "Printer", tag: "High Savings", bgColor: "bg-green-50", iconColor: "text-[#22c55e]", description: "High-performance ink tank printer with low printing cost." }
 ];
 
 export default function ProductSection() {
+    const [products, setProducts] = useState<any[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
+    const [addedToCart, setAddedToCart] = useState<number | null>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        const loadProducts = () => {
+            const stored = localStorage.getItem("jrpl_products");
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                // Migrate old data if iconName is missing
+                const migrated = parsed.map((p: any) => ({
+                    ...p,
+                    iconName: p.iconName || (p.category === "Supplies" ? "Droplets" : p.category === "Service" ? "Settings" : "Printer")
+                }));
+                setProducts(migrated.slice(0, 4));
+            } else {
+                setProducts(defaultProducts);
+                localStorage.setItem("jrpl_products", JSON.stringify(defaultProducts));
+            }
+        };
+        loadProducts();
+        window.addEventListener("storage", loadProducts);
+        return () => window.removeEventListener("storage", loadProducts);
+    }, []);
+
+    const addToCart = (product: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const cart = JSON.parse(localStorage.getItem("jrpl_cart") || "[]");
+        // Avoid duplicates in cart if necessary, or just push
+        cart.push({ ...product, cartId: Date.now() });
+        localStorage.setItem("jrpl_cart", JSON.stringify(cart));
+        window.dispatchEvent(new Event("cartUpdated"));
+        setAddedToCart(product.id);
+        setTimeout(() => setAddedToCart(null), 2000);
+    };
+
+    const buyNow = (product: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const cart = JSON.parse(localStorage.getItem("jrpl_cart") || "[]");
+        cart.push({ ...product, cartId: Date.now() });
+        localStorage.setItem("jrpl_cart", JSON.stringify(cart));
+        window.dispatchEvent(new Event("cartUpdated"));
+        router.push("/checkout");
+    };
 
     return (
-        <section className="py-20 bg-gray-50/50 overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 px-4">
-                    <div className="max-w-2xl">
-                        <h2 className="text-3xl sm:text-4xl font-black text-[#0f172a] tracking-tight">
-                            Hardware & <br />
-                            <span className="text-[#22c55e]">Original Supplies</span>
+        <section className="py-16 bg-white border-y border-slate-100 relative">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+                    <div>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                            Store Selection
                         </h2>
+                        <p className="text-slate-500 font-medium mt-1 text-xs uppercase tracking-widest">Available in Lucknow Store</p>
                     </div>
-                    <Link href="/shop" className="mt-6 md:mt-0 inline-flex items-center gap-2 text-[#4F46E5] font-black text-sm uppercase tracking-widest hover:underline group">
-                        Browse Full Shop <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    <Link href="/shop" className="mt-4 md:mt-0 inline-flex items-center gap-2 text-green-700 font-bold text-xs uppercase tracking-widest hover:text-green-800 transition-colors">
+                        View Full Store <ArrowRight size={14} />
                     </Link>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {products.map((product) => (
-                        <div key={product.id} className="group relative flex flex-col bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-xl cursor-pointer" onClick={() => setSelectedProduct(product)}>
-                            {/* Product Card - Smaller */}
-                            <div className={`relative aspect-square ${product.bgColor} overflow-hidden flex items-center justify-center m-2 rounded-xl`}>
-                                <product.icon size={80} className={`${product.iconColor} opacity-20 group-hover:scale-110 transition-transform duration-500`} />
-                                <div className="absolute top-3 left-3 flex flex-col gap-1">
-                                    <span className="px-2 py-0.5 bg-white shadow-sm rounded-full text-[8px] font-black uppercase tracking-wider text-gray-500 border border-gray-100">
-                                        {product.tag}
+                        <div key={product.id} className="enterprise-card enterprise-card-hover rounded-lg overflow-hidden group cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                            {/* Product Card */}
+                            <div className={`relative aspect-square ${product.bgColor || 'bg-slate-50'} flex items-center justify-center m-2 rounded-md transition-colors overflow-hidden`}>
+                                {product.imageUrl ? (
+                                    <Image
+                                        src={product.imageUrl}
+                                        alt={product.name}
+                                        fill
+                                        className="object-contain p-4 group-hover:scale-110 transition-transform duration-500"
+                                    />
+                                ) : (
+                                    (() => {
+                                        const Icon = iconMap[product.iconName] || Printer;
+                                        return <Icon size={64} className={`${product.iconColor || 'text-slate-400'} opacity-10 group-hover:opacity-20 transition-opacity`} />;
+                                    })()
+                                )}
+                                <div className="absolute top-2 left-2">
+                                    <span className="px-2 py-0.5 bg-white shadow-sm rounded text-[8px] font-bold uppercase tracking-wider text-slate-600 border border-slate-200">
+                                        {product.tag || 'In Stock'}
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Product Info - More Compact */}
-                            <div className="p-5 pb-6">
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-2">{product.category}</span>
-                                <h3 className="text-base font-bold text-[#0f172a] mb-6 group-hover:text-[#4f46e5] transition-colors leading-snug h-10 overflow-hidden">{product.name}</h3>
+                            <div className="p-4 pt-2">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{product.category}</span>
+                                <h3 className="text-sm font-bold text-slate-800 mb-4 group-hover:text-green-700 transition-colors line-clamp-1">{product.name}</h3>
 
                                 <div className="flex items-center justify-between">
-                                    <p className="text-lg font-black text-[#0f172a]">{product.price}</p>
-                                    <button className="bg-[#22c55e] text-white p-2 rounded-lg font-bold hover:bg-[#16a34a] transition-all shadow-md">
-                                        <ShoppingCart size={16} />
+                                    <p className="text-lg font-bold text-slate-900">{product.price}</p>
+                                    <button
+                                        onClick={(e) => addToCart(product, e)}
+                                        className="bg-slate-900 text-white p-2 rounded shadow-sm hover:bg-slate-800 transition-colors active:scale-95"
+                                    >
+                                        {addedToCart === product.id ? <Check size={16} /> : <ShoppingCart size={16} />}
                                     </button>
                                 </div>
                             </div>
@@ -102,40 +128,58 @@ export default function ProductSection() {
 
             {/* Product Detail Modal */}
             {selectedProduct && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[2.5rem] max-w-4xl w-full overflow-hidden shadow-2xl relative flex flex-col md:flex-row animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-lg max-w-4xl w-full overflow-hidden shadow-2xl relative flex flex-col md:flex-row transition-all duration-300">
                         <button
                             onClick={() => setSelectedProduct(null)}
-                            className="absolute top-6 right-6 z-10 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                            className="absolute top-4 right-4 z-10 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded transition-colors"
                         >
-                            <X size={24} className="text-gray-600" />
+                            <X size={20} />
                         </button>
 
-                        <div className={`flex-1 ${selectedProduct.bgColor} flex items-center justify-center p-12`}>
-                            <selectedProduct.icon size={160} className={`${selectedProduct.iconColor}`} />
+                        <div className={`flex-1 ${selectedProduct.bgColor || 'bg-slate-50'} flex items-center justify-center p-12 relative overflow-hidden`}>
+                            {selectedProduct.imageUrl ? (
+                                <Image
+                                    src={selectedProduct.imageUrl}
+                                    alt={selectedProduct.name}
+                                    fill
+                                    className="object-contain p-8"
+                                />
+                            ) : (
+                                (() => {
+                                    const Icon = iconMap[selectedProduct.iconName] || Printer;
+                                    return <Icon size={120} className={`${selectedProduct.iconColor} opacity-20`} />;
+                                })()
+                            )}
                         </div>
 
                         <div className="flex-1 p-8 sm:p-12 flex flex-col justify-center">
-                            <span className="text-xs font-black text-[#22c55e] uppercase tracking-widest mb-4 inline-block">{selectedProduct.category}</span>
-                            <h2 className="text-3xl font-black text-[#0f172a] mb-6">{selectedProduct.name}</h2>
-
-                            <p className="text-gray-500 text-sm leading-relaxed mb-8">
-                                {selectedProduct.description}
-                            </p>
-
-                            <div className="flex items-center gap-6 mb-8">
-                                <p className="text-3xl font-black text-[#0f172a]">{selectedProduct.price}</p>
-                                <span className="text-green-600 font-bold flex items-center gap-1 bg-green-50 px-3 py-1 rounded-lg text-xs">
-                                    <Check size={14} /> In Stock
-                                </span>
+                            <span className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-2 block">{selectedProduct.category}</span>
+                            <h2 className="text-2xl font-bold text-slate-900 mb-2">{selectedProduct.name}</h2>
+                            <div className="flex items-center gap-3 mb-6">
+                                <p className="text-xl font-bold text-slate-900">{selectedProduct.price}</p>
+                                <div className="text-[10px] font-bold text-green-700 flex items-center gap-1.5 px-2 py-0.5 bg-green-50 rounded border border-green-200">
+                                    <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
+                                    <span>In Stock</span>
+                                </div>
                             </div>
 
-                            <div className="flex gap-4">
-                                <button className="flex-1 bg-[#22c55e] text-white py-4 rounded-xl font-bold hover:bg-[#16a34a] shadow-xl shadow-green-100 transition-all active:scale-95 flex items-center justify-center gap-2">
-                                    <ShoppingCart size={18} /> Add to Cart
+                            <p className="text-slate-500 font-medium leading-relaxed mb-8 text-xs">
+                                {selectedProduct.description || "Enterprise-grade printer component for professional use."}
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={(e) => addToCart(selectedProduct, e)}
+                                    className="flex-1 border border-slate-200 text-slate-700 py-3 rounded font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors active:scale-95 flex items-center justify-center gap-2"
+                                >
+                                    {addedToCart === selectedProduct.id ? <Check size={14} /> : <><ShoppingCart size={14} /> Add to Cart</>}
                                 </button>
-                                <button className="px-6 bg-gray-100 text-gray-900 py-4 rounded-xl font-bold hover:bg-gray-200 transition-all">
-                                    Request Quote
+                                <button
+                                    onClick={(e) => buyNow(selectedProduct, e)}
+                                    className="flex-1 bg-green-600 text-white py-3 rounded font-bold text-xs uppercase tracking-widest hover:bg-green-700 transition-colors shadow-sm active:scale-95"
+                                >
+                                    Buy Now
                                 </button>
                             </div>
                         </div>

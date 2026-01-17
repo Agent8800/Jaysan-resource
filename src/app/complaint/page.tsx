@@ -3,188 +3,209 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { AlertCircle, CheckCircle2, ChevronRight, Upload, Info, Shield, Printer } from "lucide-react";
+import { Wrench, User, Mail, Phone, MapPin, AlertCircle, CheckCircle2, ArrowRight, Clock, ShieldCheck, Printer } from "lucide-react";
 
-export default function ComplaintPage() {
-    const [step, setStep] = useState(1);
-    const [isSubmitted, setIsSubmitted] = useState(false);
+export default function BookRepairPage() {
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        location: "Lucknow, Uttar Pradesh",
+        exactAddress: "",
+        problem: "",
+        printerModel: ""
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitted(true);
+        setIsSubmitting(true);
+        // Simulate API call
+        setTimeout(() => {
+            setIsSubmitting(false);
+            setIsSuccess(true);
+            // Save to local storage for admin to see
+            const requests = JSON.parse(localStorage.getItem("jrpl_requests") || "[]");
+            requests.push({
+                id: `PR-${Math.floor(10000 + Math.random() * 90000)}`,
+                customer: formData.name,
+                product: formData.printerModel || "Unknown Printer",
+                email: formData.email,
+                phone: formData.phone,
+                urgency: "Standard",
+                status: "Pending",
+                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+                issue: formData.problem,
+                location: formData.exactAddress
+            });
+            localStorage.setItem("jrpl_requests", JSON.stringify(requests));
+        }, 1500);
     };
 
-    if (isSubmitted) {
-        return (
-            <div className="flex flex-col min-h-screen bg-white">
-                <Navbar />
-                <main className="flex-grow flex items-center justify-center p-4">
-                    <div className="max-w-md w-full text-center p-12 rounded-[3rem] bg-white shadow-2xl border border-gray-100">
-                        <div className="w-24 h-24 bg-emerald-50 text-[#064E3B] rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-                            <CheckCircle2 size={56} />
-                        </div>
-                        <h1 className="text-3xl font-black text-[#022C22] mb-4">Request Logged</h1>
-                        <p className="text-gray-500 mb-8 leading-relaxed">
-                            Your enterprise support request (Ref: #PR-{Math.floor(Math.random() * 100000)}) has been registered. A technician will be dispatched within 4 hours.
-                        </p>
-                        <button
-                            onClick={() => window.location.href = "/"}
-                            className="w-full bg-[#064E3B] text-white py-5 rounded-2xl font-bold hover:bg-[#053F30] transition-all shadow-xl active:scale-95"
-                        >
-                            Return to Dashboard
-                        </button>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
     return (
-        <div className="flex flex-col min-h-screen bg-[#F0FDF4]/30">
+        <div className="flex flex-col min-h-screen bg-slate-50">
             <Navbar />
 
-            <main className="flex-grow py-12 sm:py-20 lg:py-24">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h1 className="text-4xl sm:text-5xl font-black text-[#022C22] tracking-tight">Technical Support</h1>
-                        <p className="mt-4 text-lg text-gray-500 max-w-xl mx-auto">Register your industrial printer service request for immediate professional attention.</p>
-                    </div>
+            <main className="flex-grow py-12 lg:py-20">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6">
 
-                    {/* Stepper */}
-                    <div className="mb-16 flex items-center justify-between max-w-sm mx-auto relative px-4">
-                        <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0" />
-                        {[1, 2, 3].map((s) => (
-                            <div
-                                key={s}
-                                className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center font-black transition-all duration-500 ${step >= s ? 'bg-[#064E3B] text-white shadow-xl shadow-emerald-900/20' : 'bg-white text-gray-400 border-2 border-gray-100'}`}
-                            >
-                                {s}
+                    {isSuccess ? (
+                        <div className="bg-white rounded-lg p-12 text-center shadow-xl border border-slate-200 animate-in fade-in zoom-in duration-500">
+                            <div className="w-20 h-20 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
+                                <CheckCircle2 size={40} />
                             </div>
-                        ))}
-                    </div>
+                            <h1 className="text-2xl font-bold text-slate-900 mb-2">Request Received</h1>
+                            <p className="text-slate-500 font-bold mb-10 max-w-xs mx-auto uppercase tracking-widest text-[10px] leading-relaxed">
+                                Our Lucknow technician will contact you within 2 business hours for scheduling.
+                            </p>
+                            <button onClick={() => window.location.href = "/"} className="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white rounded font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-sm active:scale-95">
+                                Back to Store
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="enterprise-card rounded-lg overflow-hidden">
+                            <div className="bg-slate-900 p-10 text-white relative">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 blur-[80px] rounded-full -mr-32 -mt-32" />
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-10 h-10 bg-white/10 rounded flex items-center justify-center border border-white/10">
+                                        <Wrench size={20} className="text-green-500" />
+                                    </div>
+                                    <h1 className="text-2xl font-bold tracking-tight">Book Repair</h1>
+                                </div>
+                                <p className="text-slate-500 font-bold text-[9px] uppercase tracking-widest">Official JRPL Lucknow Service Store</p>
+                            </div>
 
-                    <form onSubmit={handleSubmit} className="bg-white rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden">
-                        <div className="p-8 sm:p-16">
-                            {step === 1 && (
-                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <div className="flex items-center gap-3 pb-6 border-b border-gray-50 mb-8">
-                                        <div className="p-2 bg-emerald-50 text-[#064E3B] rounded-xl"><Shield size={24} /></div>
-                                        <h2 className="text-2xl font-black text-[#022C22]">Contact Information</h2>
+                            <form onSubmit={handleSubmit} className="p-8 sm:p-12 space-y-10 bg-white">
+                                {/* Personal Details */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Client Identification</h3>
+                                        <div className="flex-1 h-px bg-slate-100"></div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Full Name</label>
-                                            <input type="text" required className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-[#064E3B] outline-none transition-all font-medium" placeholder="John Doe" />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                                            <input
+                                                required
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                type="text"
+                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-green-600 outline-none transition-all shadow-inner"
+                                                placeholder="e.g. Rahul Sharma"
+                                            />
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Enterprise Email</label>
-                                            <input type="email" required className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-[#064E3B] outline-none transition-all font-medium" placeholder="john@company.com" />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email ID</label>
+                                            <input
+                                                required
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                type="email"
+                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-green-600 outline-none transition-all shadow-inner"
+                                                placeholder="rahul@domain.com"
+                                            />
                                         </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Primary Phone</label>
-                                        <input type="tel" required className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-[#064E3B] outline-none transition-all font-medium" placeholder="+971 50 123 4567" />
-                                    </div>
-                                </div>
-                            )}
-
-                            {step === 2 && (
-                                <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                                    <div className="flex items-center gap-3 pb-6 border-b border-gray-50 mb-8">
-                                        <div className="p-2 bg-emerald-50 text-[#064E3B] rounded-xl"><Printer size={24} /></div>
-                                        <h2 className="text-2xl font-black text-[#022C22]">Machine Profile</h2>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Printer Category</label>
-                                        <select required className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-[#064E3B] outline-none transition-all font-medium appearance-none cursor-pointer">
-                                            <option value="">Select hardware type</option>
-                                            <option value="laser">High-Volume Laser Jet</option>
-                                            <option value="inkjet">Precision Office Jet</option>
-                                            <option value="plotter">Architectural Plotter</option>
-                                            <option value="thermal">Label / Thermal Printer</option>
-                                            <option value="other">Managed Print Service</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Service Urgency</label>
-                                        <select required className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-[#064E3B] outline-none transition-all font-medium appearance-none cursor-pointer">
-                                            <option value="standard">Standard (Business Hours)</option>
-                                            <option value="urgent">Urgent (Express Support)</option>
-                                            <option value="critical">Critical (Enterprise Outage)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            )}
-
-                            {step === 3 && (
-                                <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                                    <div className="flex items-center gap-3 pb-6 border-b border-gray-50 mb-8">
-                                        <div className="p-2 bg-emerald-50 text-[#064E3B] rounded-xl"><AlertCircle size={24} /></div>
-                                        <h2 className="text-2xl font-black text-[#022C22]">Issue Diagnostic</h2>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Problem Description</label>
-                                        <textarea required rows={5} className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-[#064E3B] outline-none transition-all font-medium resize-none shadow-inner" placeholder="Provide error codes or visual symptoms..."></textarea>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Diagnostic Reference (Optional)</label>
-                                        <div className="mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-gray-100 border-dashed rounded-[2rem] hover:border-emerald-400 transition-all cursor-pointer group bg-gray-50">
-                                            <div className="space-y-2 text-center">
-                                                <Upload className="mx-auto h-12 w-12 text-gray-400 group-hover:text-[#064E3B] transition-colors" />
-                                                <div className="flex text-sm text-gray-600">
-                                                    <span className="font-bold text-[#064E3B] hover:underline">Upload error log</span>
-                                                    <p className="pl-1">or drag and drop</p>
-                                                </div>
-                                                <p className="text-xs text-gray-400">PDF, PNG, JPG up to 10MB</p>
-                                            </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 text-sm font-bold">+91</div>
+                                            <input
+                                                required
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                type="tel"
+                                                className="w-full pl-14 pr-4 py-3 bg-slate-50 border border-slate-200 rounded text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-green-600 outline-none transition-all shadow-inner"
+                                                placeholder="9876543210"
+                                            />
                                         </div>
                                     </div>
                                 </div>
-                            )}
-                        </div>
 
-                        <div className="px-8 pb-12 sm:px-16 flex flex-col-reverse sm:flex-row gap-4 items-center justify-between">
-                            {step > 1 ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setStep(step - 1)}
-                                    className="w-full sm:w-auto text-gray-400 font-bold hover:text-[#064E3B] transition-colors px-6"
-                                >
-                                    Previous Step
-                                </button>
-                            ) : <div></div>}
+                                {/* Location Details */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Service Coordination</h3>
+                                        <div className="flex-1 h-px bg-slate-100"></div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Lucknow Delivery Address</label>
+                                        <textarea
+                                            required
+                                            value={formData.exactAddress}
+                                            onChange={(e) => setFormData({ ...formData, exactAddress: e.target.value })}
+                                            rows={2}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-green-600 outline-none transition-all resize-none shadow-inner"
+                                            placeholder="Complete address with landmark... (Lucknow region only)"
+                                        ></textarea>
+                                    </div>
+                                </div>
 
-                            {step < 3 ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setStep(step + 1)}
-                                    className="w-full sm:w-auto bg-[#064E3B] text-white px-10 py-5 rounded-2xl font-bold hover:bg-[#053F30] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
-                                >
-                                    Continue <ChevronRight size={20} />
-                                </button>
-                            ) : (
+                                {/* Problem Details */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Diagnostic Summary</h3>
+                                        <div className="flex-1 h-px bg-slate-100"></div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Printer Model</label>
+                                            <input
+                                                required
+                                                value={formData.printerModel}
+                                                onChange={(e) => setFormData({ ...formData, printerModel: e.target.value })}
+                                                type="text"
+                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-green-600 outline-none transition-all shadow-inner"
+                                                placeholder="e.g. HP Laserjet Pro M1136"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Issue Category</label>
+                                            <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-green-600 outline-none transition-all cursor-pointer appearance-none shadow-inner">
+                                                <option>Paper / Feed Issue</option>
+                                                <option>Quality / Faded Print</option>
+                                                <option>Error / System Lock</option>
+                                                <option>Power / Connection</option>
+                                                <option>Physical / Noise Issue</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Problem Description</label>
+                                        <textarea
+                                            required
+                                            value={formData.problem}
+                                            onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
+                                            rows={3}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-green-600 outline-none transition-all resize-none shadow-inner"
+                                            placeholder="Briefly describe the fault..."
+                                        ></textarea>
+                                    </div>
+                                </div>
+
                                 <button
                                     type="submit"
-                                    className="w-full sm:w-auto bg-[#064E3B] text-white px-12 py-5 rounded-2xl font-bold hover:bg-[#053F30] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                                    disabled={isSubmitting}
+                                    className="w-full bg-slate-900 text-white py-4 rounded font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-4 disabled:opacity-50"
                                 >
-                                    Submit Request <Shield size={20} />
+                                    {isSubmitting ? "Processing..." : <>Confirm Request <ArrowRight size={16} /></>}
                                 </button>
-                            )}
-                        </div>
-                    </form>
 
-                    <div className="mt-12 flex items-center justify-center gap-8 text-gray-400">
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-                            <Shield size={16} className="text-emerald-500" /> Secure Data
+                                <div className="pt-4 flex items-center justify-between border-t border-slate-100">
+                                    <div className="flex items-center gap-2 text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+                                        <ShieldCheck size={14} className="text-green-600/50" /> Regional Store Repair
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+                                        <Clock size={14} className="text-amber-500/50" /> 2h Response Time
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-                            <Info size={16} className="text-emerald-500" /> Enterprise Support
-                        </div>
-                    </div>
+                    )}
                 </div>
             </main>
+
             <Footer />
         </div>
     );

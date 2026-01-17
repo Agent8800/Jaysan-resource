@@ -3,88 +3,102 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Search, MapPin, Menu, User, ShoppingBag } from "lucide-react";
+import { Search, MapPin, Menu, User, ShoppingBag, LogIn } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
-    const [location, setLocation] = useState("Detecting...");
+    const [location, setLocation] = useState("Lucknow, UP");
+    const [cartCount, setCartCount] = useState(0);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                try {
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
-                    );
-                    const data = await response.json();
-                    const city = data.address.city || data.address.town || data.address.village || "Current Location";
-                    setLocation(city);
-                } catch (error) {
-                    setLocation("Store Location");
-                }
-            }, () => {
-                setLocation("Store Location");
-            });
-        } else {
-            setLocation("Store Location");
-        }
+        const updateState = () => {
+            const cart = JSON.parse(localStorage.getItem("jrpl_cart") || "[]");
+            setCartCount(cart.length);
+
+            const token = localStorage.getItem("jrpl_token");
+            setIsAuthenticated(!!token);
+        };
+
+        updateState();
+        window.addEventListener("storage", updateState);
+        window.addEventListener("cartUpdated", updateState);
+        return () => {
+            window.removeEventListener("storage", updateState);
+            window.removeEventListener("cartUpdated", updateState);
+        };
     }, []);
 
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
     return (
-        <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-20 sm:h-24">
-                    {/* Logo - Increased size */}
-                    <Link href="/" className="flex-shrink-0 flex items-center">
-                        <div className="relative w-40 h-14 sm:w-56 sm:h-18">
+        <nav className="sticky top-0 z-50 w-full bg-white border-b border-slate-100 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="flex justify-between items-center h-16 sm:h-20">
+                    {/* Logo - significantly larger */}
+                    <Link href="/" className="flex-shrink-0 flex items-center pr-4">
+                        <div className="relative w-40 h-10 sm:w-56 sm:h-14">
                             <Image
                                 src="/logo.png"
-                                alt="Jaysan Resource"
+                                alt="JRPL Logo"
                                 fill
-                                className="object-contain"
+                                className="object-contain object-left"
                                 priority
                             />
                         </div>
                     </Link>
 
                     {/* Search Bar */}
-                    <div className="hidden md:flex flex-1 max-w-lg mx-8">
-                        <div className="relative w-full group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#22c55e]">
-                                <Search size={18} />
+                    <div className="hidden lg:flex flex-1 max-w-lg mx-4">
+                        <form onSubmit={handleSearch} className="relative w-full">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <Search size={16} />
                             </div>
                             <input
                                 type="text"
-                                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-[#22c55e] sm:text-sm transition-all shadow-sm"
-                                placeholder="Search for printers, ink, repair..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="block w-full pl-10 pr-4 py-2 border border-slate-300 rounded text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-green-100 focus:border-green-600 outline-none transition-all"
+                                placeholder="Search store..."
                             />
-                        </div>
+                        </form>
                     </div>
 
                     {/* Right Actions */}
-                    <div className="flex items-center gap-3 sm:gap-6">
-                        <div className="hidden lg:flex items-center gap-1 text-gray-600 hover:text-[#22c55e] cursor-pointer transition-colors px-4 py-2 bg-gray-50 rounded-xl">
-                            <MapPin size={16} className="text-[#22c55e]" />
-                            <span className="text-sm font-bold whitespace-nowrap">{location}</span>
+                    <div className="flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-2 text-slate-500 text-xs font-medium">
+                            <MapPin size={14} className="text-green-600" />
+                            <span>{location}</span>
                         </div>
 
-                        <Link
-                            href="/complaint"
-                            className="hidden sm:inline-flex items-center px-6 py-3 text-sm font-black rounded-xl text-white bg-[#22c55e] hover:bg-[#16a34a] shadow-lg shadow-green-100 transition-all active:scale-95 uppercase tracking-wider"
-                        >
-                            Book Repair
-                        </Link>
+                        {isAuthenticated ? (
+                            <Link href="/account" className="p-2 text-slate-600 hover:text-green-600 transition-colors">
+                                <User size={24} />
+                            </Link>
+                        ) : (
+                            <Link href="/login" className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-black uppercase tracking-widest hover:bg-black transition-all">
+                                <LogIn size={16} /> Login / Join
+                            </Link>
+                        )}
 
-                        <Link href="/shop" className="p-2 text-gray-600 hover:text-[#4f46e5] relative">
+                        <Link href="/cart" className="p-2 text-slate-600 hover:text-green-600 relative transition-colors">
                             <ShoppingBag size={24} />
-                            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#f59e0b] rounded-full ring-2 ring-white"></span>
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow">
+                                    {cartCount}
+                                </span>
+                            )}
                         </Link>
 
-                        <Link href="/admin" className="p-3 text-gray-600 hover:text-[#0f172a] bg-gray-50 rounded-full">
-                            <User size={22} />
-                        </Link>
-
-                        <button className="md:hidden p-2 rounded-xl text-gray-600 hover:bg-gray-100">
-                            <Menu size={28} />
+                        <button className="lg:hidden p-3 rounded-2xl text-gray-600 hover:bg-gray-100 transition-colors">
+                            <Menu size={32} />
                         </button>
                     </div>
                 </div>
